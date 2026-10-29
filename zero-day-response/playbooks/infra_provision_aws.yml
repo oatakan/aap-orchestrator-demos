@@ -290,10 +290,27 @@
       when: role_action == 'provision'
       no_log: true
 
-    - name: Derive the SSH public key inside the credentialed job
+    - name: Check whether the injected private key file exists in this EE
+      ansible.builtin.stat:
+        path: "{{ _p2s_key_file }}"
+      register: _p2s_key_stat
+      when: role_action == 'provision'
+      no_log: true
+
+    - name: Derive the SSH public key from an available credential file
       ansible.builtin.set_fact:
         _p2s_public_key: "{{ lookup('pipe', 'ssh-keygen -y -f ' ~ (_p2s_key_file | quote)) | trim }}"
-      when: role_action == 'provision'
+      when:
+        - role_action == 'provision'
+        - _p2s_key_stat.stat.exists | default(false)
+      no_log: true
+
+    - name: Use the forwarded machine ssh-agent when its file is outside the EE
+      ansible.builtin.set_fact:
+        _p2s_public_key: "{{ lookup('pipe', 'ssh-add -L 2>/dev/null | head -1') | trim }}"
+      when:
+        - role_action == 'provision'
+        - _p2s_public_key | default('') | trim | length == 0
       no_log: true
 
     - name: Require the injected machine key
