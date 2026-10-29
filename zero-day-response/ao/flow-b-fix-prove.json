@@ -255,53 +255,36 @@
     "y": 300
    },
    "parameters": {
-    "prompt": "Draft the FIX status for ${trigger.incident_id} (PHP2Shell) for human review. You do not close anything.\n\nFix availability per stream (Red Hat API, recorded): ${fix_status.artifacts.p2s_streams}\nState before this run (scan before patching): ${fix_scan.artifacts.p2s_table}\nTest environment patch result: ${fix_test.artifacts.p2s_patch}\nPatch results: ${fix_prod.artifacts.p2s_patch}\nControls removed (only where the fix is verified): ${fix_standdown.artifacts.p2s_standdown}\nRe-scan after change: ${fix_rescan.artifacts.p2s_table}\n\nRules: separate what is FIXED (verified) from what is STILL CONTAINED (no fix yet) and what is UNKNOWN. Do not call the incident closed while any lane is open. Remind that forensic triage is a separate disposition from patching. Assets already clear in the before-scan had a fixed build before this run; report them as clear without speculating how. Keep each list item under 15 words.",
+    "prompt": "Draft the FIX status for ${trigger.incident_id} (PHP2Shell) for human review. You do not close anything.\n\nFix availability per stream (Red Hat API, recorded): ${fix_status.artifacts.p2s_streams}\nState before this run (scan before patching): ${fix_scan.artifacts.p2s_table}\nTest environment patch result: ${fix_test.artifacts.p2s_patch}\nPatch results: ${fix_prod.artifacts.p2s_patch}\nControls removed (only where the fix is verified): ${fix_standdown.artifacts.p2s_standdown}\nRe-scan after change: ${fix_rescan.artifacts.p2s_table}\n\nRules: separate what is FIXED (verified) from what is STILL CONTAINED (no fix yet) and what is UNKNOWN. Do not call the incident closed while any lane is open. Remind that forensic triage is a separate disposition from patching. Assets already clear in the before-scan had a fixed build before this run; report them as clear without speculating how. Keep each list item under 15 words.\n\nReturn only one JSON object that matches this JSON schema, with no other text before or after it:\n{\"properties\":{\"case_can_close\":{\"type\":\"boolean\"},\"fixed\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"next_step\":{\"minLength\":1,\"type\":\"string\"},\"still_contained\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"unknown\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"}},\"required\":[\"fixed\",\"still_contained\",\"unknown\",\"case_can_close\",\"next_step\"],\"type\":\"object\"}",
     "credential_id": "YOUR_AO_MODEL_CREDENTIAL_ID",
-    "tool_selection_strategy": "NONE",
-    "response_schema": {
-     "type": "object",
-     "required": [
-      "fixed",
-      "still_contained",
-      "unknown",
-      "case_can_close",
-      "next_step"
-     ],
-     "properties": {
-      "fixed": {
-       "type": "array",
-       "items": {
-        "type": "string"
-       }
-      },
-      "still_contained": {
-       "type": "array",
-       "items": {
-        "type": "string"
-       }
-      },
-      "unknown": {
-       "type": "array",
-       "items": {
-        "type": "string"
-       }
-      },
-      "case_can_close": {
-       "type": "boolean"
-      },
-      "next_step": {
-       "type": "string"
-      }
-     }
-    }
+    "tool_selection_strategy": "NONE"
    }
+  },
+  {
+   "id": "check_close_draft",
+   "name": "CHECK \u00b7 Fix status",
+   "type": "aap_job_template",
+   "position": {
+    "x": 5460,
+    "y": 300
+   },
+   "parameters": {
+    "job_template_name": "p2s-ai-output-check",
+    "organization_name": "Ansible Product Demos (APD)",
+    "credential_id": "YOUR_AAP_CREDENTIAL_ID",
+    "extra_vars": {
+     "p2s_ai_raw": "${close_draft.result.content}",
+     "p2s_ai_schema": "close_draft"
+    }
+   },
+   "description": "Parses and validates the AI answer against its reviewed schema; fails visibly on an empty or malformed answer"
   },
   {
    "id": "prove_case_b",
    "name": "PROVE \u00b7 Record to case",
    "type": "aap_job_template",
    "position": {
-    "x": 5460,
+    "x": 5880,
     "y": 300
    },
    "parameters": {
@@ -311,7 +294,7 @@
     "extra_vars": {
      "p2s_incident": "${trigger.incident_id}",
      "p2s_case_kind": "fix_status",
-     "p2s_case_entry": "${close_draft.result.content}"
+     "p2s_case_entry": "${check_close_draft.artifacts.p2s_ai}"
     }
    },
    "description": "Lab: AAP job artifact. In production: posts to the SOAR/ITSM case. Refuses an empty draft."
@@ -378,8 +361,12 @@
    "to": "close_draft"
   },
   {
-   "from": "close_draft",
+   "from": "check_close_draft",
    "to": "prove_case_b"
+  },
+  {
+   "from": "close_draft",
+   "to": "check_close_draft"
   }
  ]
 }
