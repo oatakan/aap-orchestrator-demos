@@ -335,7 +335,7 @@
     - name: Require successful estate lifecycle operations
       ansible.builtin.assert:
         that: _p2s_aws_result.rc == 0
-        fail_msg: "{{ _p2s_aws_result.stdout | from_json }}"
+        fail_msg: "Estate lifecycle failed (safe JSON): {{ _p2s_aws_result.stdout }}"
 
     - name: Publish the resource ledger and independent inventory evidence
       ansible.builtin.set_stats:
