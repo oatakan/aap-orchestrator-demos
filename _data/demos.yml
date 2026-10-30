@@ -729,7 +729,7 @@
   thumbnail:
     gradient: "linear-gradient(135deg, #4a1a1a 0%, #1a0d0d 50%, #2a1a3a 100%)"
     icon: "🚨"
-  blurb: A zero-day lands before the fix. Evidence and look-back in parallel, AI reads the vendor advisory, a policy gate and test host prove the interim controls, named owners approve, and the fix is applied only where it exists. Two workflows, playbooks and a six-instance AWS estate.
+  blurb: A zero-day lands before the fix. Evidence and look-back in parallel, AI reads the vendor advisory, a policy gate and test host prove the interim controls, named owners approve, and the fix is applied only where it exists. Two workflows, 12 playbooks and a six-instance AWS estate.
   stats:
     workflows: 2
     playbooks: 12

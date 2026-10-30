@@ -1,4 +1,4 @@
-# Zero-day response: PHP2Shell
+# Zero-Day Response: PHP2Shell
 
 What do you do in the gap between the first exploitation attempt and the fix? This demo replays the PHP2Shell
 zero-day (CVE-2026-109618, CVE-2026-109619) against a small RHEL estate on AWS and answers the four questions a board
