@@ -91,13 +91,24 @@
                       if not any(t['Key'] == 'p2s-demo' for t in obj.get('Tags', [])):
                           ec2.create_tags(Resources=[obj[idkey]], Tags=tags('p2s-demo-' + name))
                           record_create(obj[idkey])
+              # The implicit default AZ may not offer either required t3 type (us-east-1e).
+              required_types = {n['instance_type'] for n in nodes}
+              offerings = pages('describe_instance_type_offerings', 'InstanceTypeOfferings',
+                  LocationType='availability-zone', Filters=[
+                      {'Name': 'instance-type', 'Values': sorted(required_types)}])
+              supported_zones = set.intersection(*[
+                  {o['Location'] for o in offerings if o['InstanceType'] == instance_type}
+                  for instance_type in required_types])
+              assert supported_zones, 'no availability zone offers all required instance types'
               subs = ec2.describe_subnets(Filters=owned + vf)['Subnets']
               assert len(subs) <= 1
               if subs:
                   sub = subs[0]
                   assert sub['CidrBlock'] == '10.78.1.0/24'
+                  assert sub['AvailabilityZone'] in supported_zones, 'existing subnet lacks required t3 offerings'
               else:
                   sub = ec2.create_subnet(VpcId=vid, CidrBlock='10.78.1.0/24',
+                      AvailabilityZone=sorted(supported_zones)[0],
                       TagSpecifications=spec('subnet', 'p2s-demo-public'))['Subnet']
                   record_create(sub['SubnetId'])
               sid = sub['SubnetId']
