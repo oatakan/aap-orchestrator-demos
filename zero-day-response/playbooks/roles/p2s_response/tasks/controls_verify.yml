@@ -95,7 +95,7 @@
             {'check': 'edge: multipart POST rejected (403) - uploads disabled on this service',
              'ok': (_v_edge.stdout | default('')) == '403'}])
        + ([] if (p2s_action | default('')) != 'isolate' else [
-            {'check': 'isolation: HTTP firewall service removed',
+            {'check': 'isolation: inbound HTTP blocked by the host firewall',
              'ok': (_v_fw is not unreachable) and (_v_fw.rc | default(1)) == 0 and 'http' not in _v_fw.stdout.split()},
             {'check': 'isolation: appliance measured alive on loopback',
              'ok': (_v_vendor_local is not unreachable) and (_v_vendor_local.status | default(-1)) == 200},
