@@ -164,26 +164,6 @@
     },
     "type": "array"
    },
-   "ranked": {
-    "items": {
-     "properties": {
-      "action": {
-       "type": "string"
-      },
-      "priority": {
-       "type": "string"
-      },
-      "service": {
-       "type": "string"
-      },
-      "why": {
-       "type": "string"
-      }
-     },
-     "type": "object"
-    },
-    "type": "array"
-   },
    "unknowns": {
     "items": {
      "type": "string"
@@ -199,7 +179,6 @@
    "exec_summary",
    "are_we_affected",
    "were_we_hit",
-   "ranked",
    "unknowns"
   ],
   "type": "object"
