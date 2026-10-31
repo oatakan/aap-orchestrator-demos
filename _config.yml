@@ -32,6 +32,7 @@ exclude:
   - subscription-management/
   - kernel-compliance/
   - novel-incident-remediation/
+  - zero-day-response/
   - collections/
   - shared/
   - README.md
